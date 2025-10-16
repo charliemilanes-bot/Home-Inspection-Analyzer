@@ -1,13 +1,11 @@
 import multer from "multer";
-import { readFile } from "fs/promises";
-import fs from "fs";
 import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 
 dotenv.config();
-const upload = multer({ dest: "/tmp" });
+const upload = multer({ storage: multer.memoryStorage() }); // <-- memory storage
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export const config = { api: { bodyParser: false } };
@@ -22,10 +20,11 @@ export default async function handler(req, res) {
       let text = req.body.text || "";
 
       if (req.file) {
-        const buffer = await readFile(req.file.path);
+        const buffer = req.file.buffer; // <-- use in-memory buffer
 
         if (req.file.mimetype === "application/pdf") {
-          text += "\n" + (await pdfParse(buffer)).text;
+          const data = await pdfParse(buffer);
+          text += "\n" + data.text;
         } else if (
           req.file.mimetype ===
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
@@ -36,8 +35,6 @@ export default async function handler(req, res) {
         } else {
           text += buffer.toString("utf-8");
         }
-
-        fs.unlink(req.file.path, () => {});
       }
 
       if (!text.trim()) return res.status(400).json({ error: "No text provided" });
@@ -56,7 +53,6 @@ Analyze the following report text and return structured findings in JSON format:
 }
 Text: ${text}
 `;
-
       const completion = await client.responses.create({
         model: "gpt-5",
         input: prompt,
