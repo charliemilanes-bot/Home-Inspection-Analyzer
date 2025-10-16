@@ -1,0 +1,22 @@
+{
+  "name": "home-inspection-analyzer",
+  "version": "1.0.0",
+  "description": "Home Inspection Analyzer deployed on Vercel",
+  "main": "index.js",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "openai": "^6.3.0",
+    "dotenv": "^17.2.3",
+    "pdf-parse": "^2.3.12",
+    "mammoth": "^1.11.0",
+    "jspdf": "^3.0.3",
+    "@json2csv/node": "^7.0.6"
+  }
+}
